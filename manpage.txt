@@ -1,0 +1,13 @@
+sudoso
+NAME
+	sudoso - a shell-based SUDOku SOlver, written in Python
+SYNTAX and CLI-OPTIONS
+	The first argument must be the sudoku riddle which is to solve. Write this from line for line from top to bottom, from left to right. Write numbers you don't know as a '0'
+	You may seperate the lines with semicolons, sudoso can then better tell you where your misspellings are.
+	Following command-line-options are as following:
+
+	-c,--count	Only count the solutions
+	-v,--verbose	Verbose mode, will tell you how it solved the sudoku
+	-s,--stepper	Stepper mode, will wait for a keypress after every solving step
+	-d,		Deterministic mode, will not give a solution if it would have to guess to solve the sudoku
+
