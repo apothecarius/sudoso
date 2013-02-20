@@ -497,16 +497,10 @@ def set_nr(but):
 import sys
 
 #CLI-commands
-cmd = bin()
 #-l	output will be given in a single line
-cmd.writeLine = False
 #-v	will give hints on how the sudoku was solved
-cmd.verbose = False
 #-c	will only count the possible solutions
-cmd.countSolutions = False
 #-n	will generate a new sudoku
-cmd.generateNew = False
-
 valid_args = ["-n","-v","-c", "-l"]
 
 def isSudokuText(s):
@@ -558,10 +552,8 @@ def setSudoku(l):
 		exit()
 	return retu
 
+#evaluateCommands
 
-def evaluateCommand(arg):
-	assert(type(arg) == str)
-	pass
 
 
 
@@ -570,19 +562,6 @@ def evaluateCommand(arg):
 if sys.argv[0] == '': #was imported, so dont do anything here
 	pass
 else:#bash call, so interpret the CLI-arguments
-
-	if isSudokuText(sys.argv[1]):
-		sudoku = setSudoku(sys.argv[1])
-		args = sys.argv[2:]
-	else
-		args = sys.argv[1:]
-	for arg in args:
-		evaluateComand(arg)
-
-
-		########TODO consider everything below as deprecated
-
-
 	for arg in sys.argv[1:]:
 		if not (arg in valid_args):
 			if not isSudokuText(arg):
