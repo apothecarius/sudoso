@@ -1,76 +1,12 @@
 #!/usr/bin/python
 #author:Jonas Bollgruen
 #mail:apothecarius@web.de
-#version:2.3
-
-#stuff to know: 
-#to enter a puzzle use interp_list(slots)
-#give it a list with all slots, empty slots are zeros
-#to solve a puzzle use solve()
-#if it can't be solved it returns 20
+#version:2.3.2
 
 import random
 from copy import deepcopy as lscp
 
-#get the sudoku to solve from the CLI
-import sys
 
-#CLI-commands
-#-l	output will be given in a single line
-#-v	will give hints on how the sudoku was solved
-#-c	will only count the possible solutions
-#-n	will generate a new sudoku
-valid_args = ["-n","-v","-c", "-l"]
-
-
-
-def isSudokuText(s):
-	if(len(s) == 81):
-		for l in s:
-			if(l not in ["0","1","2","3","4","5","6","7","8","9"]):
-				return False
-		return True
-	elif(len(s) == 89):#split by semicolon
-		s = s.split(";")
-		if len(s) != 9:
-			print("Incorrect amount of lines")
-			exit()
-		for i in range(0,9):#l:lines
-			if(len(s[i]) != 9):
-				print("Incorrect length of line "+str(i))
-				print(s[i])
-				exit()
-			for l in s:
-				if(l not in ["0","1","2","3","4","5","6","7","8","9"]):
-					return False
-			return True
-	else:
-		return False
-			
-def setSudoku(l):
-	retu = 0
-	if("-n" in l):
-		retu = "-n"
-	for i in l:
-		if len(i) in [81,89] and isSudokuText(i):
-			if retu == "-n":#both given so contradict so exit
-				print('Sudoku and "-n"-Operator is given')
-				exit()
-			elif type(retu) == list:#already found one
-				print("Two Sudokus given")
-				exit()
-			else:#found
-				#TODO nonsense
-				retu = []
-				i = i.replace(",","")#delete line separator
-				i = list(i)
-				for a in i:						
-					retu.append(int(a))
-				retu = interp_list(retu)
-	if retu == 0:
-		print('Neither a Sudoku nor the "-n"-Operator is given')
-		exit()
-	return retu
 
 #generates a field
 #this is a 2-dimensional list with 9 slots each
@@ -85,6 +21,7 @@ def gen_field():
 		feld.append(lscp(rows))
 	return feld
 	    
+#discard possibilities
 #checks if at the position (posx,posy) a number has been found out
 # if so this function deletes the possibility for this number
 # in all slots, for which this slot has an effect on
@@ -111,7 +48,7 @@ def disc_possi(feld, posx, posy):
 
 	return feld
 
-#looks semi-randomly (starts random, continues linear)
+#looks semi-randomly (starts randomly, continues linearly)
 # for an unclear place in the field and guesses
 # returns positions[list] or failures[int]
 #(use only for creation)
@@ -134,7 +71,7 @@ def randomize(feld):
 						return [xi, yi]
 	return 1
 
-#gets a part of the field (a line, column or on of the 9 3x3-blocks
+#gets a part of the field (a line, column or one of the 9 3x3-blocks
 #and returns it as 1-dimensional list
 def get_block(feld, typ, nr):
 	if typ == 1:
@@ -357,9 +294,13 @@ def pr_simp(feld):#a simple display of the result so far
 				if type(fake[x][y]) == set:
 					fake[x][y] = 0
 		if "-l" in sys.argv:
-			out = []
-			for l in fake:
-				out.extend(l)
+			out = ""
+			for x in str(feld): 
+				if x in "123456789":
+					out += x
+#			out = [x for x in str(feld) if x in "123456789"]
+#			for l in fake:
+#				out.extend(l)
 			print(out)
 		else:
 			for l in fake:
@@ -438,14 +379,6 @@ def solve(feld):#returns either the solution of the entered sudoku or a list of 
 	return feld
 
 
-class gen_step:
-	def __init__(self, pos, val,p,feld):
-		self.pos = pos
-		self.val = val
-		self.possibs = p
-		self.feld = feld
-
-
 #will generate a complete sudoku
 oops = {1:"Err",2:"Ehm",3:"Hold on",4:"god dammit",5:"What the"}
 oops.setdefault("What the bloody hell is wrong today!")
@@ -455,7 +388,8 @@ def gen_sud():
 	while(not done(feld)):
 		if not solvable(feld):#trap, revert steps until solvable
 			tries += 1
-			print(oops[tries])
+			if verbose:
+				print(oops[tries])
 			feld = gen_field()
 			continue
 		if verbose:
@@ -493,7 +427,8 @@ def gen_sud():
 				break
 			else:
 				feld = disc_possi(feld,f[0],f[1])
-	print("Th"+tries*"e"+"re we go:")
+	if verbose:
+		print("Th"+tries*"e"+"re we go:")
 	return feld
 
 #will change a given (or selfgenerated) sudoku so that there will be at least n missing numbers
@@ -555,14 +490,103 @@ def set_nr(but):
 			except:
 				buts[x][y].set_text("0")
 
+
+########################## CLI-specific ################################
+ 
+#get the sudoku to solve from the CLI
+import sys
+
+#CLI-commands
+cmd = bin()
+#-l	output will be given in a single line
+cmd.writeLine = False
+#-v	will give hints on how the sudoku was solved
+cmd.verbose = False
+#-c	will only count the possible solutions
+cmd.countSolutions = False
+#-n	will generate a new sudoku
+cmd.generateNew = False
+
+valid_args = ["-n","-v","-c", "-l"]
+
+def isSudokuText(s):
+	if(len(s) == 81):
+		for l in s:
+			if(l not in ["0","1","2","3","4","5","6","7","8","9"]):
+				return False
+		return True
+	#elif(len(s) == 89):#split by semicolon
+	else:
+		s = s.split(";")
+		if len(s) != 9:
+			print("Incorrect amount of lines")
+			exit()
+		for i in range(0,9):#l:lines
+			if(len(s[i]) != 9):
+				print("Incorrect length of line "+str(i))
+				print(s[i])
+				exit()
+			for l in s[i]:
+				if(l not in ["0","1","2","3","4","5","6","7","8","9"]):
+					return False
+			return True
+	#else:
+	#	return False
+			
+def setSudoku(l):
+	retu = 0
+	if("-n" in l):
+		retu = "-n"
+	for i in l:
+		if len(i) in [81,89] and isSudokuText(i):
+			if retu == "-n":#both given so contradict so exit
+				print('Sudoku and "-n"-Operator is given')
+				exit()
+			elif type(retu) == list:#already found one
+				print("Two Sudokus given")
+				exit()
+			else:#found
+				#TODO nonsense
+				retu = []
+				i = i.replace(";","")#delete line separator
+				i = list(i)
+				for a in i:						
+					retu.append(int(a))
+				retu = interp_list(retu)
+	if retu == 0:
+		print('Neither a Sudoku nor the "-n"-Operator is given')
+		exit()
+	return retu
+
+
+def evaluateCommand(arg):
+	assert(type(arg) == str)
+	pass
+
+
+
 ################################### main ##############################
 
 if sys.argv[0] == '': #was imported, so dont do anything here
 	pass
 else:#bash call, so interpret the CLI-arguments
+
+	if isSudokuText(sys.argv[1]):
+		sudoku = setSudoku(sys.argv[1])
+		args = sys.argv[2:]
+	else
+		args = sys.argv[1:]
+	for arg in args:
+		evaluateComand(arg)
+
+
+		########TODO consider everything below as deprecated
+
+
 	for arg in sys.argv[1:]:
-		if not (arg in valid_args or isSudokuText(arg)):#to be extended
-			exit("Invalid Argument given: "+arg)
+		if not (arg in valid_args):
+			if not isSudokuText(arg):
+				exit("Invalid Argument given: "+arg)
 	verbose = "-v" in sys.argv
 	sudoku = setSudoku(sys.argv[1:])
 	if (sudoku =="-n"): #make new one
