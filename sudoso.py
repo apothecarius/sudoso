@@ -6,8 +6,6 @@
 import random
 from copy import deepcopy as lscp
 
-
-
 #generates a field
 #this is a 2-dimensional list with 9 slots each
 #initially these contain a set with 1 to 9
@@ -557,7 +555,6 @@ def setSudoku(l):
 		print('Neither a Sudoku nor the "-n"-Operator is given')
 		exit()
 	return retu
-
 
 def evaluateCommand(arg):
 	assert(type(arg) == str)
